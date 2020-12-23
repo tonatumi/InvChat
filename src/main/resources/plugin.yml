@@ -1,0 +1,9 @@
+name: InvChat
+version: @version@
+main: com.github.tonatumi.invchat.InvChat
+api-version: 1.16
+commands:
+  ic:
+    description: open ic GUI
+    usage: /<command>
+    default: true
