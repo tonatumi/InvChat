@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
@@ -9,6 +7,11 @@ version = '1.0-SNAPSHOT'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+configurations {
+    embed
+    compile.extendsFrom(embed)
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -16,39 +19,47 @@ repositories {
         url = 'https://papermc.io/repo/repository/maven-public/'
     }
     maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+    maven {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 dependencies {
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "com.destroystokyo.paper:paper-api:$spigot_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    main.java.srcDirs += 'src/main/java'
+}
 processResources {
     from(sourceSets.main.resources.srcDirs) {
         filter ReplaceTokens, tokens: [version: version]
     }
 }
 buildscript {
-    ext.kotlin_version = '1.4.30-M1'
+    ext{
+        kotlin_version = '1.3.61'
+        spigot_version = '1.16.4-R0.1-SNAPSHOT'
+    }
     repositories {
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
         mavenCentral()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
+
+jar {
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
 }
